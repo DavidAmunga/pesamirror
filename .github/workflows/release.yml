@@ -2,8 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 env:
   JAVA_VERSION: "17"
@@ -74,14 +72,28 @@ jobs:
           name: app-release-apk
           path: app/build/outputs/apk/release/app-release.apk
 
-      - name: Create draft Release
+      - name: Prepare release notes
+        id: release_notes
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          BODY="# PesaMirror ${TAG}\n\n"
+          if [ -f "app/CHANGELOG.md" ] && [ -s "app/CHANGELOG.md" ]; then
+            BODY="${BODY}## Changelog\n\n$(cat app/CHANGELOG.md)\n"
+          elif [ -f "CHANGELOG.md" ] && [ -s "CHANGELOG.md" ]; then
+            BODY="${BODY}## Changelog\n\n$(cat CHANGELOG.md)\n"
+          else
+            BODY="${BODY}*Changelog will be updated from Changesets when available.*\n"
+          fi
+          echo -e "$BODY" > release_body.md
+
+      - name: Create Release
         if: steps.tag.outputs.pushed == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Release ${{ steps.version.outputs.tag }}
-          draft: true
-          generate_release_notes: true
+          name: PesaMirror ${{ steps.version.outputs.tag }}
+          body_path: release_body.md
+          draft: false
           files: app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
