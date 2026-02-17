@@ -1,0 +1,92 @@
+<resources>
+    <string name="app_name">PesaMirror</string>
+
+    <!-- Transaction types -->
+    <string name="transaction_type_hint">Choose transaction type</string>
+    <string name="type_send_money">Send Money</string>
+    <string name="type_paybill">Paybill</string>
+    <string name="type_till_number">Till Number</string>
+    <string name="type_withdraw_cash">Withdraw Cash</string>
+
+    <!-- USSD UI -->
+    <string name="phone_number_label">Phone number</string>
+    <string name="phone_number_hint">0712345678</string>
+    <string name="till_number_label">Till Number</string>
+    <string name="till_number_hint">e.g. 123456</string>
+    <string name="business_number_label">Business Number</string>
+    <string name="business_number_hint">e.g. 888888</string>
+    <string name="account_number_label">Account Number</string>
+    <string name="account_number_hint">e.g. 12345</string>
+    <string name="agent_number_label">Agent Number</string>
+    <string name="agent_number_hint">e.g. 123456</string>
+    <string name="store_number_label">Store Number</string>
+    <string name="store_number_hint">e.g. 001</string>
+    <string name="amount_label">Amount</string>
+    <string name="amount_hint">Enter amount</string>
+    <string name="pin_label">M-Pesa PIN</string>
+    <string name="pin_hint">M-Pesa PIN</string>
+    <string name="confirm_send_checkbox">Press 1 to confirm and send at end of flow</string>
+    <string name="run_ussd">Run</string>
+    <string name="open_accessibility_settings">Open Accessibility Settings</string>
+
+    <!-- Accessibility service -->
+    <string name="accessibility_service_label">PesaMirror USSD Automation</string>
+    <string name="accessibility_service_description">Automates the *334# USSD flow. Enable only if you trust this app.</string>
+
+    <!-- Messages -->
+    <string name="enable_accessibility_message">Enable PesaMirror in Accessibility settings to automate USSD.</string>
+    <string name="ussd_started">Starting *334#…</string>
+    <string name="fill_required_fields">Please fill all required fields.</string>
+
+    <!-- SMS trigger -->
+    <string name="sms_trigger_section">Trigger by SMS</string>
+    <string name="sms_trigger_enable">Enable SMS trigger</string>
+    <string name="sms_trigger_allowed_senders_hint">Allowed sender numbers (comma-separated)</string>
+    <string name="sms_trigger_allowed_senders_label">Accept SMS from these numbers only</string>
+    <string name="sms_trigger_patterns_title">SMS format (send from allowed number)</string>
+    <string name="sms_trigger_pattern_sm">Send Money: SM|amount or SM|phone|amount</string>
+    <string name="sms_trigger_pattern_bg">Till: BG|till_number|amount</string>
+    <string name="sms_trigger_pattern_pb">Paybill: PB|business|amount|account</string>
+    <string name="sms_trigger_pattern_wa">Withdraw: WA|agent|amount|store</string>
+    <string name="sms_trigger_patterns_list">SM|amount or SM|phone|amount\nBG|till_number|amount\nPB|business|amount|account\nWA|agent|amount|store</string>
+    <string name="sms_trigger_channel_name">PesaMirror SMS</string>
+    <string name="sms_trigger_notification_title">PesaMirror</string>
+    <string name="sms_trigger_notification_text">Monitoring SMS for USSD commands</string>
+
+    <!-- About -->
+    <string name="about_button">About</string>
+    <string name="about_title">About PesaMirror</string>
+    <string name="about_message">PesaMirror %1$s\n\nFor personal use only. Best suited for older phones (under Android 12); safest on a second phone with a second number. Automates M-Pesa USSD (*334#) for send money, paybill, till, and withdraw. Requires Accessibility and your M-Pesa PIN. Works offline.\n\nOpen source: https://github.com/davidamunga/pesamirror\nAuthor: David Amunga — https://davidamunga.com\n\nUse at your own risk. Not affiliated with Safaricom.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_page1_title">Welcome to PesaMirror</string>
+    <string name="onboarding_page1_desc">Automate M-Pesa USSD (*334#) for Send Money, Paybill, Till, and Withdraw. Fill the form, tap Run, and the app guides the USSD flow for you. Works fully offline—no data is sent to any server.</string>
+    <string name="onboarding_page2_title">Enable Accessibility</string>
+    <string name="onboarding_page2_desc">You must enable PesaMirror in Accessibility settings so it can read the USSD menu and enter your choices. Your PIN is stored securely on device only.</string>
+    <string name="onboarding_page3_title">Set your PIN</string>
+    <string name="onboarding_page3_desc">Enter your M-Pesa PIN in the app before running. Never share it. The app works fully offline—no data is sent to any server.</string>
+    <string name="onboarding_page4_title">Intended use &amp; risk</string>
+    <string name="onboarding_page4_desc">Strictly for personal use only. Works fully offline. Best suited for older phones (under Android 12). Safest if used on a second phone with a second number you don’t use for daily banking. The app can perform real transactions—any loss or misuse is your responsibility. Not affiliated with Safaricom.</string>
+    <string name="onboarding_page5_title">Open source &amp; you</string>
+    <string name="onboarding_page5_desc">PesaMirror is open source on GitHub. Author: David Amunga — davidamunga.com. Use and modify at your own risk.</string>
+
+    <!-- Spotlight tutorial (main screen) -->
+    <string name="tutorial_transaction_title">Transaction type</string>
+    <string name="tutorial_transaction_desc">Choose Send Money, Paybill, Till, or Withdraw. The form fields change based on your selection.</string>
+    <string name="tutorial_pin_title">M-Pesa PIN</string>
+    <string name="tutorial_pin_desc">Enter your M-Pesa PIN here. It is stored securely on this device only.</string>
+    <string name="tutorial_run_title">Run USSD</string>
+    <string name="tutorial_run_desc">Tap to start *334# and the app will automate the steps. Ensure Accessibility is enabled first.</string>
+    <string name="tutorial_done">Done</string>
+    <string name="about_show_tutorial">Show tutorial again</string>
+
+    <!-- Warnings &amp; disclaimers -->
+    <string name="disclaimer_title">Important notice</string>
+    <string name="disclaimer_message">PesaMirror is for personal use only. It automates USSD and can perform real M-Pesa transactions using your PIN. Best suited for older phones (under Android 12); safest on a second phone with a second number. Keep your PIN private. The developer is not responsible for any loss or misuse. Open source: github.com/davidamunga/pesamirror. Author: David Amunga (https://davidamunga.com). Not affiliated with Safaricom.</string>
+    <string name="pin_warning_title">Set your M-Pesa PIN</string>
+    <string name="pin_warning_message">No PIN is set. Enter your M-Pesa PIN in the field below before running USSD or enabling SMS trigger. Your PIN is stored securely on device.</string>
+    <string name="pin_warning_ok">I understand</string>
+</resources>

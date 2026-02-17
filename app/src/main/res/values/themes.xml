@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.PesaMirror" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryDark">@color/primary_green_dark</item>
+        <item name="fontFamily">@font/inter_family</item>
+    </style>
+    <style name="Theme.PesaMirror" parent="Base.Theme.PesaMirror" />
+
+    <!-- Logo title: use Cal Sans when available (add res/font/calsans.xml + font file) -->
+    <style name="TextAppearance.PesaMirror.Logo" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">@font/inter_family</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+</resources>

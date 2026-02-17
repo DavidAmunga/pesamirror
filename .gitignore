@@ -1,0 +1,48 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Output of the Gradle build
+.gradle/
+build/
+**/build/
+
+# Local configuration (SDK path, etc.)
+local.properties
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+!/.idea/codeStyles/
+!/.idea/runConfigurations/
+
+# Keystore files – do not commit release keys
+*.jks
+*.keystore
+
+# Kotlin
+.kotlin/
+
+# External native build
+.externalNativeBuild/
+.cxx/
+
+# Android Studio captures
+/captures
+
+# ProGuard / R8 mapping (optional: some teams commit for crash symbolication)
+# app/build/outputs/mapping/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Misc
+*.dex
+*.class
+*.swp
+*~
