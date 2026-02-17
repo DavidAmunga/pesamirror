@@ -53,15 +53,16 @@ jobs:
         run: chmod +x gradlew
 
       - name: Set up signing keystore
-        if: secrets.KEYSTORE_BASE64 != ''
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          fi
 
       - name: Build Release APK (signed)
         env:
-          RELEASE_STORE_FILE: ${{ secrets.KEYSTORE_BASE64 != '' && 'app/release.keystore' || '' }}
+          RELEASE_STORE_FILE: app/release.keystore
           RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
