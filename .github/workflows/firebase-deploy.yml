@@ -39,6 +39,8 @@ jobs:
       - name: Build
         run: pnpm run build
         working-directory: web
+        env:
+          GH_PAGES: 'true'
 
       - name: Deploy to Firebase Hosting
         run: npx firebase-tools deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT }} --non-interactive

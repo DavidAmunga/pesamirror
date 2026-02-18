@@ -2,6 +2,6 @@
   "hosting": {
     "public": "web/dist/client",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "**", "destination": "/shell.html" }]
+    "rewrites": [{ "source": "**", "destination": "/_shell.html" }]
   }
 }
