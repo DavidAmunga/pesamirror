@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Drawer } from 'vaul'
-import { Delete } from 'lucide-react'
+import { BookUser, Delete } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -264,11 +264,11 @@ export function NumericKeypadDrawer({
           <Button
             type="button"
             variant="outline"
-            className="py-8 px-4 text-base font-semibold self-end mb-0"
+            className="py-12 cursor-pointer w-18 h-full px-8 text-base font-semibold self-end mb-0"
             onClick={pickContact}
             title="Select from contacts"
           >
-            Contacts
+            <BookUser className="size-6" />
           </Button>
         )}
       </div>
