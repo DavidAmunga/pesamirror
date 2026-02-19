@@ -10,12 +10,7 @@
  * app even when killed; no persistent connection needed).
  */
 
-import {
-  decryptPlaintext,
-  encryptPlaintext,
-  isEncryptedBlob,
-} from './crypto-storage'
-import type { EncryptedBlob } from './crypto-storage'
+import { encryptPlaintext, isEncryptedBlob } from './crypto-storage'
 
 export interface ServiceAccount {
   type?: string
@@ -34,6 +29,14 @@ export interface FCMConfig {
 
 const STORAGE_KEY = 'pesamirror_fcm_config'
 const SESSION_KEY = 'pesamirror_fcm_config_session'
+const SESSION_KEY_ENC = 'pesamirror_fcm_enc_key'
+
+function randomPassphrase(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32))
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
 
 function parsePlainConfig(raw: string): FCMConfig | null {
   try {
@@ -79,43 +82,17 @@ export function loadFCMConfig(): FCMConfig | null {
 }
 
 /**
- * Unlock encrypted FCM config with passphrase. On success, decrypted config
- * is stored in sessionStorage for this tab so loadFCMConfig() returns it.
+ * Save FCM config. Always encrypts at rest with a random session key (stored
+ * in sessionStorage). Decrypted config is also written to session so
+ * loadFCMConfig() works in this tab. New tab = no key = must paste & save again.
  */
-export async function unlockFCMConfig(passphrase: string): Promise<boolean> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw || !isEncryptedBlob(raw)) return false
-    const blob = JSON.parse(raw) as EncryptedBlob
-    const plain = await decryptPlaintext(blob, passphrase)
-    const config = parsePlainConfig(plain)
-    if (!config) return false
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem(SESSION_KEY, plain)
-    }
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Save FCM config. If passphrase is provided, config is encrypted at rest.
- * Decrypted config is also written to sessionStorage so it's available without
- * unlocking again in this tab.
- */
-export async function saveFCMConfig(
-  config: FCMConfig,
-  passphrase?: string,
-): Promise<void> {
+export async function saveFCMConfig(config: FCMConfig): Promise<void> {
   const plain = JSON.stringify(config)
-  if (passphrase && passphrase.trim()) {
-    const blob = await encryptPlaintext(plain, passphrase.trim())
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(blob))
-  } else {
-    localStorage.setItem(STORAGE_KEY, plain)
-  }
+  const key = randomPassphrase()
+  const blob = await encryptPlaintext(plain, key)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(blob))
   if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem(SESSION_KEY_ENC, key)
     sessionStorage.setItem(SESSION_KEY, plain)
   }
 }
@@ -124,6 +101,7 @@ export function clearFCMConfig(): void {
   localStorage.removeItem(STORAGE_KEY)
   if (typeof sessionStorage !== 'undefined') {
     sessionStorage.removeItem(SESSION_KEY)
+    sessionStorage.removeItem(SESSION_KEY_ENC)
   }
 }
 

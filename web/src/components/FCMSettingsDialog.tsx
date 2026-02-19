@@ -1,14 +1,8 @@
 import * as React from 'react'
-import { Copy, Eye, EyeOff, Lock, Settings, Trash2 } from 'lucide-react'
+import { Copy, Eye, EyeOff, Settings, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ServiceAccount } from '@/lib/fcm'
-import {
-  clearFCMConfig,
-  isFCMConfigEncrypted,
-  loadFCMConfig,
-  saveFCMConfig,
-  unlockFCMConfig,
-} from '@/lib/fcm'
+import { clearFCMConfig, isFCMConfigEncrypted, loadFCMConfig, saveFCMConfig } from '@/lib/fcm'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -54,12 +48,9 @@ export function FCMSettingsDialog({ children }: Props) {
   const [saved, setSaved] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [maskCredentials, setMaskCredentials] = React.useState(true)
-  const [unlockPassphrase, setUnlockPassphrase] = React.useState('')
-  const [savePassphrase, setSavePassphrase] = React.useState('')
-  const [unlockLoading, setUnlockLoading] = React.useState(false)
   const [saveLoading, setSaveLoading] = React.useState(false)
 
-  const isLocked = open && isFCMConfigEncrypted() && !loadFCMConfig()
+  const hasEncryptedOtherSession = open && isFCMConfigEncrypted() && !loadFCMConfig()
 
   React.useEffect(() => {
     if (!open) return
@@ -68,41 +59,14 @@ export function FCMSettingsDialog({ children }: Props) {
       setSaJson(JSON.stringify(stored.serviceAccount, null, 2))
       setDeviceToken(stored.deviceToken)
       setMaskCredentials(true)
-    } else if (!isFCMConfigEncrypted()) {
+    } else {
       setSaJson('')
       setDeviceToken('')
       setMaskCredentials(false)
     }
-    setUnlockPassphrase('')
-    setSavePassphrase('')
     setSaved(false)
     setError(null)
   }, [open])
-
-  async function handleUnlock() {
-    setError(null)
-    if (!unlockPassphrase.trim()) {
-      setError('Enter your passphrase to unlock.')
-      return
-    }
-    setUnlockLoading(true)
-    try {
-      const ok = await unlockFCMConfig(unlockPassphrase.trim())
-      if (ok) {
-        const stored = loadFCMConfig()
-        if (stored) {
-          setSaJson(JSON.stringify(stored.serviceAccount, null, 2))
-          setDeviceToken(stored.deviceToken)
-          setMaskCredentials(true)
-        }
-        setUnlockPassphrase('')
-      } else {
-        setError('Wrong passphrase or invalid stored data.')
-      }
-    } finally {
-      setUnlockLoading(false)
-    }
-  }
 
   const hasStoredConfig = Boolean(saJson.trim() && deviceToken.trim())
   const displaySaJson = maskCredentials ? redactPrivateKey(saJson) : saJson
@@ -141,12 +105,8 @@ export function FCMSettingsDialog({ children }: Props) {
     }
     setSaveLoading(true)
     try {
-      await saveFCMConfig(
-        { serviceAccount: sa, deviceToken: deviceToken.trim() },
-        savePassphrase.trim() || undefined,
-      )
+      await saveFCMConfig({ serviceAccount: sa, deviceToken: deviceToken.trim() })
       setSaved(true)
-      setSavePassphrase('')
       setTimeout(() => setOpen(false), 600)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save.')
@@ -198,61 +158,34 @@ export function FCMSettingsDialog({ children }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {isLocked ? (
-          <div className="space-y-3">
-            <p className="text-muted-foreground text-sm">
-              Stored credentials are locked. Enter your passphrase to view or
-              edit.
+        {hasEncryptedOtherSession && (
+          <div className="flex items-start justify-between gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs">
+            <p className="text-muted-foreground flex-1">
+              Credentials from another tab or session aren’t available here.
+              Paste below to save in this tab, or clear saved data.
             </p>
-            <div className="space-y-1.5">
-              <Label htmlFor="unlock-passphrase">Passphrase</Label>
-              <input
-                id="unlock-passphrase"
-                type="password"
-                placeholder="Enter passphrase"
-                value={unlockPassphrase}
-                onChange={(e) => {
-                  setUnlockPassphrase(e.target.value)
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive shrink-0 hover:bg-destructive/10"
+              onClick={() => {
+                if (confirm('Remove saved FCM data from this device?')) {
+                  clearFCMConfig()
+                  setSaJson('')
+                  setDeviceToken('')
                   setError(null)
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                autoComplete="off"
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
-              />
-            </div>
-            {error && <p className="text-destructive text-xs">{error}</p>}
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                onClick={handleUnlock}
-                disabled={unlockLoading || !unlockPassphrase.trim()}
-              >
-                <Lock className="size-4 mr-2" />
-                {unlockLoading ? 'Unlocking…' : 'Unlock'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                onClick={() => {
-                  if (confirm('Remove saved FCM credentials? You can add them again later.')) {
-                    clearFCMConfig()
-                    setSaJson('')
-                    setDeviceToken('')
-                    setError(null)
-                    setUnlockPassphrase('')
-                  }
-                }}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
+                }
+              }}
+            >
+              <Trash2 className="size-3.5 mr-1" />
+              Clear
+            </Button>
           </div>
-        ) : (
+        )}
         <div className="space-y-3">
           <p className="text-muted-foreground text-xs">
-            Credentials are stored only on this device. Use a passphrase when
-            saving to encrypt them at rest.
+            Credentials are stored only on this device and encrypted at rest.
           </p>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -336,27 +269,10 @@ export function FCMSettingsDialog({ children }: Props) {
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="save-passphrase">
-              Passphrase to encrypt (optional)
-            </Label>
-            <input
-              id="save-passphrase"
-              type="password"
-              placeholder="Leave empty to store unencrypted"
-              value={savePassphrase}
-              onChange={(e) => setSavePassphrase(e.target.value)}
-              autoComplete="new-password"
-              className="border-input bg-background ring-offset-background focus-visible:ring-ring w-full rounded-md border px-3 py-1.5 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
-            />
-          </div>
-
           {error && <p className="text-destructive text-xs">{error}</p>}
         </div>
-        )}
 
-        {!isLocked && (
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
             {hasStoredConfig && (
               <Button
                 type="button"
@@ -376,7 +292,6 @@ export function FCMSettingsDialog({ children }: Props) {
               {saveLoading ? 'Saving…' : saved ? 'Saved!' : 'Save'}
             </Button>
           </DialogFooter>
-        )}
       </DialogContent>
     </Dialog>
   )

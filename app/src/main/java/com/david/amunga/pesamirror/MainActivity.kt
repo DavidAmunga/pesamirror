@@ -533,27 +533,37 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) requestNotificationPermissionIfNeeded()
         }
 
+        fcmTokenMasked = true
         val cached = prefs.getString(KEY_FCM_TOKEN, null)
         if (!cached.isNullOrBlank()) updateFcmTokenDisplay(cached)
         fetchFcmToken()
 
         findViewById<com.google.android.material.button.MaterialButton>(R.id.refreshFcmTokenButton)
-            .setOnClickListener { fetchFcmToken() }
+            .setOnClickListener { refreshFcmToken() }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.revealFcmTokenButton).apply {
+            setText(R.string.push_trigger_token_reveal)
+            setOnClickListener {
+                fcmTokenMasked = !fcmTokenMasked
+                setText(if (fcmTokenMasked) R.string.push_trigger_token_reveal else R.string.push_trigger_token_hide)
+                updateFcmTokenDisplay(SecurePrefs.get(this@MainActivity).getString(KEY_FCM_TOKEN, null))
+            }
+        }
         findViewById<com.google.android.material.button.MaterialButton>(R.id.copyFcmTokenButton)
             .setOnClickListener {
                 val token = prefs.getString(KEY_FCM_TOKEN, null)
                 if (token.isNullOrBlank()) {
-                    Snackbar.make(findViewById(android.R.id.content), "Token not available yet.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(findViewById(android.R.id.content), getString(R.string.push_trigger_token_unavailable), Snackbar.LENGTH_SHORT).show()
                 } else {
                     val cm = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                     cm.setPrimaryClip(android.content.ClipData.newPlainText("FCM Token", token))
-                    Snackbar.make(findViewById(android.R.id.content), "Token copied.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(findViewById(android.R.id.content), getString(R.string.push_trigger_token_copied), Snackbar.LENGTH_SHORT).show()
                 }
             }
     }
 
+    /** Fetches the current FCM token and updates cache + UI (no invalidation). */
     private fun fetchFcmToken() {
-        com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+        FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token ->
                 if (!token.isNullOrBlank()) {
                     SecurePrefs.get(this).edit().putString(KEY_FCM_TOKEN, token).apply()
@@ -563,12 +573,56 @@ class MainActivity : AppCompatActivity() {
             .addOnFailureListener { updateFcmTokenDisplay(null) }
     }
 
+    /**
+     * Invalidates the current FCM token and fetches a new one, then updates cache + UI.
+     * Use this when you need a fresh token (e.g. after copying to web so the old one is no longer valid).
+     */
+    private fun refreshFcmToken() {
+        val refreshBtn = findViewById<com.google.android.material.button.MaterialButton>(R.id.refreshFcmTokenButton)
+        refreshBtn.isEnabled = false
+        FirebaseMessaging.getInstance().deleteToken()
+            .addOnSuccessListener {
+                FirebaseMessaging.getInstance().token
+                    .addOnSuccessListener { token ->
+                        if (!token.isNullOrBlank()) {
+                            SecurePrefs.get(this).edit().putString(KEY_FCM_TOKEN, token).apply()
+                            updateFcmTokenDisplay(token)
+                            Snackbar.make(
+                                findViewById(android.R.id.content),
+                                getString(R.string.push_trigger_token_refreshed),
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                        refreshBtn.isEnabled = true
+                    }
+                    .addOnFailureListener {
+                        updateFcmTokenDisplay(null)
+                        Snackbar.make(
+                            findViewById(android.R.id.content),
+                            getString(R.string.push_trigger_token_unavailable),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                        refreshBtn.isEnabled = true
+                    }
+            }
+            .addOnFailureListener {
+                Snackbar.make(
+                    findViewById(android.R.id.content),
+                    getString(R.string.push_trigger_token_refresh_failed),
+                    Snackbar.LENGTH_SHORT
+                ).show()
+                refreshBtn.isEnabled = true
+            }
+    }
+
+    private var fcmTokenMasked = true
+
     private fun updateFcmTokenDisplay(token: String?) {
         val tv = findViewById<android.widget.TextView>(R.id.fcmTokenText)
-        tv.text = if (token.isNullOrBlank()) {
-            getString(R.string.push_trigger_token_unavailable)
-        } else {
-            if (token.length > 34) "${token.take(20)}…${token.takeLast(10)}" else token
+        tv.text = when {
+            token.isNullOrBlank() -> getString(R.string.push_trigger_token_unavailable)
+            fcmTokenMasked && token.length > 16 -> "${token.take(8)}••••••••${token.takeLast(8)}"
+            else -> token
         }
     }
 

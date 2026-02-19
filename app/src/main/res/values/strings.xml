@@ -61,7 +61,12 @@
     <string name="push_trigger_token_label">Your Device Token</string>
     <string name="push_trigger_token_hint">Copy this into the web app settings</string>
     <string name="push_trigger_token_unavailable">Token not yet available — tap Refresh</string>
+    <string name="push_trigger_token_refreshed">Token refreshed. Copy the new token to the web app.</string>
+    <string name="push_trigger_token_refresh_failed">Could not refresh token. Check network and try again.</string>
+    <string name="push_trigger_token_reveal">Reveal</string>
+    <string name="push_trigger_token_hide">Hide</string>
     <string name="push_trigger_token_copy">Copy Token</string>
+    <string name="push_trigger_token_copied">Token copied to clipboard.</string>
     <string name="push_trigger_token_refresh">Refresh</string>
     <string name="push_trigger_channel_name">PesaMirror Push</string>
     <string name="push_trigger_notification_title">PesaMirror</string>
