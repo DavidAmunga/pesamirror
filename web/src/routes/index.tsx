@@ -4,10 +4,12 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import type { ParsedIntent } from '@/lib/intent'
 import type { TransactionMode } from '@/lib/sms'
 import { TRANSACTION_TYPES, buildSmsBody, openSmsApp } from '@/lib/sms'
 import { loadFCMConfig, triggerFCMEvent } from '@/lib/fcm'
 import { NumericKeypadDrawer } from '@/components/NumericKeypadDrawer'
+import { VoiceCommandDrawer } from '@/components/VoiceCommandDrawer'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -319,6 +321,39 @@ function Home() {
                 error={fieldState.error?.message}
               />
             )}
+          />
+
+          <VoiceCommandDrawer
+            onVoiceSubmit={async (intent: ParsedIntent) => {
+              const config = loadFCMConfig()
+              if (!config) {
+                toast.error(
+                  'Remote push not configured. Open settings to set up FCM.',
+                )
+                return
+              }
+              const body = buildSmsBody(intent.type as TransactionMode, {
+                phone: 'phone' in intent ? intent.phone : '',
+                till: 'till' in intent ? intent.till : '',
+                business: 'business' in intent ? intent.business : '',
+                account: 'account' in intent ? intent.account : '',
+                agent: 'agent' in intent ? intent.agent : '',
+                store: 'store' in intent ? intent.store : '',
+                amount: intent.amount,
+              })
+              try {
+                await triggerFCMEvent(config, 'ussd-trigger', { body })
+                toast.success('Push sent to device.')
+              } catch (err) {
+                const message =
+                  err instanceof Error ? err.message : 'Push failed.'
+                toast.error(
+                  message.startsWith('FCM error')
+                    ? 'Remote push failed. Check internet and FCM settings.'
+                    : message,
+                )
+              }
+            }}
           />
 
           <div className="space-y-2">
